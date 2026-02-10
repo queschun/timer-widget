@@ -1,0 +1,11 @@
+# Python 환경
+venv/
+__pycache__/
+*.py[cod]
+
+# OS 설정
+.DS_Store
+Thumbs.db
+
+# 환경 변수 (Gemini API 키 등 저장 예정)
+.env
