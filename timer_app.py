@@ -208,14 +208,18 @@ class TimerWidget(QMainWindow):
         except Exception as e:
             print(f"[사운드 오류] {e}")
 
-        # 2. 시스템 알림 (win11toast) + 시스템 사운드
+        # 2. 시스템 알림 (win11toast) + 시스템 사운드 - 업무/휴식 구분
         try:
-            toast("타이머 종료", "업무 시간이 끝났습니다!", audio="ms-winsound-notification-reminder")
+            if self._current_session_is_work:
+                toast("타이머 종료", "업무 시간이 끝났습니다!", audio="ms-winsound-notification-reminder")
+            else:
+                toast("휴식 종료", "휴식 종료! 다시 힘내볼까요?", audio="ms-winsound-notification-reminder")
         except Exception as e:
             print(f"[알림 오류] {e}")
 
         # 3. 콘솔 출력 및 UI 초기화
-        print("업무 종료!")
+        msg = "업무 종료!" if self._current_session_is_work else "휴식 종료!"
+        print(msg)
         self.time_label.setText("10:00")
 
     def format_time(self, seconds: int) -> str:
