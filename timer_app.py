@@ -145,11 +145,17 @@ class TimerWidget(QMainWindow):
         layout.addWidget(self.progress_bar)
 
     def start_timer(self, seconds: int, is_work: bool):
+        """타이머 시작. 이미 실행 중이면 시간을 초기화하고 새 세션으로 전환."""
         self.remaining_seconds = seconds
         self._current_session_is_work = is_work
-        self.timer.start(1000)
+        self.time_label.setText(self.format_time(seconds))
+
+        if not self.timer.isActive():
+            self.timer.start(1000)
+        # 실행 중이어도 remaining_seconds 갱신으로 update_countdown이 새 값 사용
 
     def update_countdown(self):
+        """QTimer 콜백: 1초마다 남은 시간 감소, MM:SS 실시간 업데이트."""
         if self.remaining_seconds > 0:
             self.remaining_seconds -= 1
             self.time_label.setText(self.format_time(self.remaining_seconds))
@@ -163,6 +169,9 @@ class TimerWidget(QMainWindow):
         if self.remaining_seconds <= 0:
             self.timer.stop()
             self.time_label.setText("00:00")
+
+            # 종료 알림 (콘솔 출력)
+            print("업무 종료!")
 
     def format_time(self, seconds: int) -> str:
         m = seconds // 60
