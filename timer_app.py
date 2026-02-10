@@ -31,10 +31,8 @@ class TimerWidget(QMainWindow):
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        # 크기: 15cm x 15cm (96 DPI 기준 약 567px)
-        size_cm = 15
-        size_px = int(size_cm / 2.54 * 96)
-        self.setFixedSize(size_px, size_px)
+        # 크기: 400x400 픽셀 (약 10cm x 10cm)
+        self.setFixedSize(400, 400)
 
         # 드래그를 위한 변수
         self.drag_position = None
@@ -56,46 +54,55 @@ class TimerWidget(QMainWindow):
         self.setCentralWidget(central)
 
         layout = QVBoxLayout(central)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(15)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(10)
 
-        # 배경 스타일 (50% 반투명)
+        # 배경 스타일 (50% 반투명) + 가독성 높은 흰색 텍스트
         central.setStyleSheet("""
             QWidget#central {
                 background-color: rgba(40, 44, 52, 128);
-                border-radius: 12px;
+                border-radius: 10px;
             }
             QPushButton {
                 background-color: rgba(97, 175, 239, 180);
-                color: white;
+                color: #ffffff;
                 border: none;
-                border-radius: 8px;
-                padding: 10px 16px;
+                border-radius: 6px;
+                padding: 8px 12px;
                 font-weight: bold;
+                font-size: 13pt;
             }
             QPushButton:hover {
                 background-color: rgba(97, 175, 239, 220);
+                color: #ffffff;
             }
             QPushButton:pressed {
                 background-color: rgba(77, 155, 219, 255);
+                color: #ffffff;
             }
             QPushButton#restBtn {
                 background-color: rgba(129, 199, 132, 180);
+                color: #ffffff;
             }
             QPushButton#restBtn:hover {
                 background-color: rgba(129, 199, 132, 220);
+                color: #ffffff;
             }
             QPushButton#restBtn:pressed {
                 background-color: rgba(109, 179, 112, 255);
+                color: #ffffff;
             }
             QProgressBar {
                 border: none;
-                border-radius: 6px;
+                border-radius: 5px;
                 text-align: center;
                 background-color: rgba(60, 64, 72, 200);
+                color: #ffffff;
+                font-size: 12pt;
+                font-weight: bold;
             }
             QProgressBar::chunk {
-                border-radius: 6px;
+                border-radius: 5px;
                 background-color: qlineargradient(
                     x1:0, y1:0, x2:1, y2:0,
                     stop:0 #61afef,
@@ -105,11 +112,12 @@ class TimerWidget(QMainWindow):
         """)
         central.setObjectName("central")
 
-        # 상단: 남은 시간 표시
+        # 상단: 남은 시간 표시 (큰 폰트)
         self.time_label = QLabel("00:00")
         self.time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.time_label.setFont(QFont("Segoe UI", 36, QFont.Weight.Bold))
-        self.time_label.setStyleSheet("color: white;")
+        self.time_label.setFont(QFont("Segoe UI", 80, QFont.Weight.Bold))
+        self.time_label.setStyleSheet("color: #ffffff;")
+        self.time_label.setMinimumHeight(100)
         layout.addWidget(self.time_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # 버튼: 10분 업무, 10분 휴식
@@ -133,7 +141,7 @@ class TimerWidget(QMainWindow):
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setFormat("%p%")
-        self.progress_bar.setMinimumHeight(20)
+        self.progress_bar.setMinimumHeight(28)
         layout.addWidget(self.progress_bar)
 
     def start_timer(self, seconds: int, is_work: bool):
