@@ -5,6 +5,10 @@
 """
 
 import sys
+import time
+import winsound
+
+from win11toast import toast
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -92,6 +96,16 @@ class TimerWidget(QMainWindow):
                 background-color: rgba(109, 179, 112, 255);
                 color: #ffffff;
             }
+            QPushButton#exitBtn {
+                background-color: rgba(158, 158, 158, 180);
+                font-size: 11pt;
+            }
+            QPushButton#exitBtn:hover {
+                background-color: rgba(180, 80, 80, 200);
+            }
+            QPushButton#exitBtn:pressed {
+                background-color: rgba(160, 60, 60, 255);
+            }
             QProgressBar {
                 border: none;
                 border-radius: 5px;
@@ -132,8 +146,13 @@ class TimerWidget(QMainWindow):
         rest_btn.setObjectName("restBtn")
         rest_btn.clicked.connect(lambda: self.start_timer(10 * 60, is_work=False))
 
+        exit_btn = QPushButton("종료")
+        exit_btn.setObjectName("exitBtn")
+        exit_btn.clicked.connect(self.close_app)
+
         btn_layout.addWidget(work_btn)
         btn_layout.addWidget(rest_btn)
+        btn_layout.addWidget(exit_btn)
         layout.addLayout(btn_layout)
 
         # 하단: 60분 목표 대비 진행률
@@ -143,6 +162,11 @@ class TimerWidget(QMainWindow):
         self.progress_bar.setFormat("%p%")
         self.progress_bar.setMinimumHeight(28)
         layout.addWidget(self.progress_bar)
+
+    def close_app(self):
+        """앱 종료."""
+        self.timer.stop()
+        QApplication.quit()
 
     def start_timer(self, seconds: int, is_work: bool):
         """타이머 시작. 이미 실행 중이면 시간을 초기화하고 새 세션으로 전환."""
@@ -166,12 +190,33 @@ class TimerWidget(QMainWindow):
                 progress = min(100, int(self.elapsed_work_seconds / self.goal_total_seconds * 100))
                 self.progress_bar.setValue(progress)
 
-        if self.remaining_seconds <= 0:
-            self.timer.stop()
-            self.time_label.setText("00:00")
+            # 0이 된 직후: 00:00 화면 먼저 보여준 뒤 알람
+            if self.remaining_seconds == 0:
+                self.time_label.setText("00:00")
+                QApplication.processEvents()
+                self.timer.stop()
+                self.timer_finished()
 
-            # 종료 알림 (콘솔 출력)
-            print("업무 종료!")
+    def timer_finished(self):
+        """0초 도달 시 비프음, 시스템 알림, 콘솔 출력, UI 초기화가 동시에 실행."""
+        # 1. 비프음: 1000Hz, 0.5초, 0.1초 간격으로 3번 반복
+        try:
+            for i in range(3):
+                winsound.Beep(1000, 500)
+                if i < 2:
+                    time.sleep(0.1)
+        except Exception as e:
+            print(f"[사운드 오류] {e}")
+
+        # 2. 시스템 알림 (win11toast) + 시스템 사운드
+        try:
+            toast("타이머 종료", "업무 시간이 끝났습니다!", audio="ms-winsound-notification-reminder")
+        except Exception as e:
+            print(f"[알림 오류] {e}")
+
+        # 3. 콘솔 출력 및 UI 초기화
+        print("업무 종료!")
+        self.time_label.setText("10:00")
 
     def format_time(self, seconds: int) -> str:
         m = seconds // 60
